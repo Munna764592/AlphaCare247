@@ -169,21 +169,6 @@ export default function Home() {
         })
     }
     useEffect(() => {
-        // navigator.geolocation.getCurrentPosition((position) => {
-        //     const { latitude, longitude } = position.coords;
-        //     console.log(latitude + " " + longitude)
-        //     const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyC8WxEKuLd-xWZ3Zo4YsaNKSF2W2Ta2khI`;
-
-        //     axios.get(apiUrl, {
-        //         headers: {
-        //             Accept: "application/json",
-        //             "Content-type": "application/json"
-        //         },
-        //     }).then(res => {
-        //         console.log(res.data);
-        //     })
-
-        // });
         callProfilesection();
     }, [])
 
