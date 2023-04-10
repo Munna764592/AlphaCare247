@@ -13,15 +13,14 @@ import { useFilterContext } from "./context/filtercontext";
 const Icons = ({ val, setFaqIsOpen2, setclickedFaq }) => {
     const [expandIcon, setexpandIcon] = useState(false);
     function expandIconfun() {
-
-        if (expandIcon == false) {
+        if (expandIcon === false) {
             setexpandIcon(true);
-        } else if (expandIcon == true) {
+        } else if (expandIcon === true) {
             setexpandIcon(false);
         }
     }
     return (
-        <div className="kf" key={val._id}>
+        <div className="kf">
             <img className={expandIcon ? "cbt-icon1 cbt-icon11" : "cbt-icon1"} src={require("../images/radiology_pathology/1.png")} alt="img" />
             <img className={expandIcon ? "cbt-icon2 cbt-icon21" : "cbt-icon2"} src={require("../images/radiology_pathology/3.png")} alt="img" onClick={() => { setFaqIsOpen2(1); setclickedFaq(val) }} />
             <img className={expandIcon ? "cbt-icon3 cbt-icon31" : "cbt-icon3"} src={require("../images/radiology_pathology/4.png")} alt="img" />
@@ -30,29 +29,6 @@ const Icons = ({ val, setFaqIsOpen2, setclickedFaq }) => {
             <h1>{val.category}</h1>
             <div className="MostBText">{val.content}</div>
         </div>
-    )
-}
-const FaqRP = ({ res }) => {
-    const [hideFaq, sethideFaq] = useState(true);
-    console.log(res)
-
-    function hideFaqiconfun() {
-        if (hideFaq === false) {
-            sethideFaq(true);
-        } else if (hideFaq === true) {
-
-            sethideFaq(false);
-        }
-    }
-    return (
-        <ul key={res._id} style={{ paddingLeft: "1rem", margin: "0px" }}>
-            <li><div className="faqheading" onClick={() => { hideFaqiconfun() }}>
-                {res.q} <i style={{ cursor: "pointer", color: "#02bdb4" }} className={hideFaq ? "fa-solid fa-angle-down rotr" : "fa-solid fa-angle-down rotr rotateFaqicon"} ></i>
-            </div>
-                <div className={hideFaq ? "hideText hideText1 mt-1" : "hideText mt-1"}>{res.a}</div>
-                <hr style={{ marginTop: "0px", marginBottom: "10px", padding: "0px", width: "100%", height: "0.3px", backgroundColor: "black" }} />
-            </li>
-        </ul>
     )
 }
 const FaqCommon = ({ res }) => {
@@ -66,22 +42,21 @@ const FaqCommon = ({ res }) => {
         }
     }
     return (
-        <ul key={res._id} style={{ paddingLeft: "1rem", margin: "0px" }}>
-            <li><div className="faqheading" onClick={() => { hideFaqiconfun() }}>
-                {res.q} <i style={{ cursor: "pointer", color: "#02bdb4" }} className={hideFaq ? "fa-solid fa-angle-down rotr " : "fa-solid fa-angle-down rotr rotateFaqicon"} ></i>
-            </div>
-
+        <ul style={{ paddingLeft: "1rem", margin: "0px" }}>
+            <li>
+                <div className="faqheading" onClick={() => { hideFaqiconfun() }}>
+                    {res.q} <i style={{ cursor: "pointer", color: "#02bdb4" }} className={hideFaq ? "fa-solid fa-angle-down rotr " : "fa-solid fa-angle-down rotr rotateFaqicon"} ></i>
+                </div>
                 <div className={hideFaq ? "hideText hideText1 mt-1" : "hideText mt-1"}>{res.a}</div>
                 <hr style={{ marginTop: "0px", marginBottom: "10px", padding: "0px", width: "100%", height: "0.3px", backgroundColor: "black" }} />
             </li>
         </ul>
-
     )
 }
 
 export default function Home() {
     const { isLoading, LabDatas, PinCodes, MostBookedPathology, MostBookedRadiology, FaqRadiology, FaqPathology, FaqSample } = useLabContext();
-    const { handlesrchfilter, filters: { text }, filterData } = useFilterContext();
+    const { handlesrchfilter, filters: { text }, filterData, Cookielen } = useFilterContext();
     const [srchsuggest, setsrchsuggest] = useState(true);
     const [FaqIsOpen2, setFaqIsOpen2] = useState(0);
     const [clickedFaq, setclickedFaq] = useState([]);
@@ -169,21 +144,6 @@ export default function Home() {
         })
     }
     useEffect(() => {
-        // navigator.geolocation.getCurrentPosition((position) => {
-        //     const { latitude, longitude } = position.coords;
-        //     console.log(latitude + " " + longitude)
-        //     const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyC8WxEKuLd-xWZ3Zo4YsaNKSF2W2Ta2khI`;
-
-        //     axios.get(apiUrl, {
-        //         headers: {
-        //             Accept: "application/json",
-        //             "Content-type": "application/json"
-        //         },
-        //     }).then(res => {
-        //         console.log(res.data);
-        //     })
-
-        // });
         callProfilesection();
     }, [])
 
@@ -262,7 +222,7 @@ export default function Home() {
                 return pin;
             }
         })
-        if (code.map(res => res.Pincodes)[0]) {
+        if (code.filter(res => { return res.Pincodes })[0]) {
             setTick(true);
             setXmark(false);
 
@@ -283,6 +243,7 @@ export default function Home() {
             } else {
                 setbookbtn(false)
             }
+            Cookielen(JSON.parse(Cookies.get("tests")).length)
         } else {
             setbookbtn(true);
             Cookies.set("tests", JSON.stringify(myArray), {
@@ -307,6 +268,7 @@ export default function Home() {
             path: '/'
         })
         getCookie();
+
     }
     const [bookbtn, setbookbtn] = useState(false);
     const setbookfun = () => {
@@ -406,14 +368,16 @@ export default function Home() {
             return (
                 <>
                     <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
-                        <Audio
+                        {/* <div className="loader"></div> */}
+                        {/* <Audio
                             height="80"
                             width="100%"
                             radius="9"
                             color="#02bdb4"
                             ariaLabel="loading"
 
-                        />
+                        /> */}
+                        <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
             )
@@ -438,10 +402,9 @@ export default function Home() {
                         </form>
                         <i style={{ color: "#02bdb4", fontSize: "25px", position: "absolute", left: "9px", zIndex: "+2", top: "15px" }} className="fa-solid fa-magnifying-glass"></i>
                         <div className={srchsuggest ? "d-none srch_suggest" : "srch_suggest"}>
-                            {filterData && (filterData.map((res, key) => {
+                            {filterData && (filterData.map(res => {
                                 return (
                                     <div key={res._id}><span className="listtest" onClick={() => { setCookie(res._id, res.name); setsrchsuggest(true) }}>{res.name}</span>
-                                        {/* <a href="#"> {res.LAB_NAME}</a> */}
                                     </div>
                                 )
                             }))
@@ -457,8 +420,6 @@ export default function Home() {
                         or<img className="ml-1" src={require("../images/prescription.png")} alt="img" /><span>Upload<br />Prescription<i className="fa-solid fa-caret-right"></i></span>
                     </div>
                 </div>
-
-
                 <div style={{ display: "flex" }}>
                     <img className="img-home" src={require("../images/scooter1.png")} alt="img" />
                     <div style={{ width: "50%" }} className="text-center">
@@ -652,9 +613,9 @@ export default function Home() {
                             <div className="row pb-4">
                                 <h1 style={{ color: "#02bdb4" }}>Most Booked Blood Tests</h1>
                                 <Slider className="RP" {...settings7}>
-                                    {MostBookedPathology?.map((val) => {
+                                    {MostBookedPathology?.map(val => {
                                         return (
-                                            <Icons val={val} setFaqIsOpen2={setFaqIsOpen2} setclickedFaq={setclickedFaq} />
+                                            <Icons key={val._id} val={val} setFaqIsOpen2={setFaqIsOpen2} setclickedFaq={setclickedFaq} />
                                         )
                                     })}
                                 </Slider>
@@ -667,9 +628,9 @@ export default function Home() {
                             <div className="row">
                                 <h1 style={{ color: "#02bdb4" }}>Most Booked Health Scans and Imaging Tests</h1>
                                 <Slider className="RP mb-2" {...settings7}>
-                                    {MostBookedRadiology?.map((val) => {
+                                    {MostBookedRadiology?.map(val => {
                                         return (
-                                            <Icons val={val} setFaqIsOpen2={setFaqIsOpen2} setclickedFaq={setclickedFaq} />
+                                            <Icons key={val._id} val={val} setFaqIsOpen2={setFaqIsOpen2} setclickedFaq={setclickedFaq} />
                                         )
                                     })}
                                 </Slider>
@@ -773,7 +734,7 @@ export default function Home() {
                                             <div style={{ width: "100%" }}>
                                                 {FaqRadiology?.map(val => {
                                                     return Object.values(val.faq).slice(0, 3).map(res =>
-                                                        <FaqCommon res={res} />
+                                                        <FaqCommon key={res.q} res={res} />
                                                     )
                                                 })}
                                             </div>
@@ -783,7 +744,7 @@ export default function Home() {
                                             <div style={{ width: "100%" }}>
                                                 {FaqPathology?.map(val => {
                                                     return Object.values(val.faq).slice(0, 3).map(res =>
-                                                        <FaqCommon res={res} />
+                                                        <FaqCommon key={res.q} res={res} />
                                                     )
                                                 })}
                                             </div>
@@ -793,7 +754,7 @@ export default function Home() {
                                             <div style={{ width: "100%" }}>
                                                 {FaqSample?.map(val => {
                                                     return Object.values(val.faq).slice(0, 3).map(res =>
-                                                        <FaqCommon res={res} />
+                                                        <FaqCommon key={res.q} res={res} />
                                                     )
                                                 })}
                                             </div>
@@ -806,13 +767,11 @@ export default function Home() {
                 </div>
                 {/* <!--//section specialists-->
                 <!--section testimonials--> */}
-                <div div className="bg-grey pb-4" >
-
+                <div className="bg-grey pb-4" >
                     <div className="title-wrap">
                         <div className="h-sub theme-color text-center pt-4">Testimonials</div>
                         <h2
                             className="h1 double-title double-title--white text-center"
-                            data-title="Testimonials"
                         >
                             <span>
                                 What Our
@@ -907,7 +866,7 @@ export default function Home() {
                 {/* <!--//section testimonials-->
 
                 <!--section news & achieved--> */}
-                <div div className="section" >
+                <div className="section" >
                     <div className="row no-gutters row-shift">
                         <div className="col-lg-6 ">
                             <div className="container-shift-left">
@@ -1097,7 +1056,7 @@ export default function Home() {
                                     <h2 style={{ fontSize: "30px", padding: "0px", color: "#02bdb4" }}>Frequently Asked <span style={{ color: "#ffc107" }}>Questions</span></h2>
                                     <div style={{ width: "100%" }}>
                                         {Object.values(clickedFaq.faq).map(res =>
-                                            <FaqRP res={res} />
+                                            <FaqCommon key={res.q} res={res} />
                                         )}
                                     </div>
                                 </div>
@@ -1148,9 +1107,6 @@ export default function Home() {
                     Please enter valid 10 digit Mobile number!
                 </div>
             </div>
-            {/* <!-- Get Full Bodycheckup @999/- Only --> */}
-            <ins id='adss' className="adsbygoogle" style={{ width: '728px', height: '90px' }} data-ad-client="ca-pub-7271577983241015"
-                data-ad-slot="4265781202"></ins>
         </>
     )
 }

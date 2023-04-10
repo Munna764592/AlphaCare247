@@ -26,14 +26,7 @@ const Labs = () => {
             return (
                 <>
                     <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
-                        <Audio
-                            height="80"
-                            width="100%"
-                            radius="9"
-                            color="#02bdb4"
-                            ariaLabel="loading"
-
-                        />
+                        <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
             )

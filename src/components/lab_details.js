@@ -1,32 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useLabContext } from "./context/globalcontext";
 import { useFilterContext } from "./context/filtercontext";
+import { useFilterlabContext } from "./context/filterlabcontext";
 import { Link, useNavigate } from "react-router-dom";
-import { Audio } from 'react-loader-spinner';
 import ReactPaginate from 'react-paginate';
 import Cookies from 'js-cookie';
 
 export default function LabDetails() {
     const navigate = useNavigate();
     const { isLoading, LabDatas } = useLabContext();
-    const { handlesrchfilter, filters: { text }, filterData } = useFilterContext();
+    const { handlesrchfilter, filters: { text }, filterData, filterlabData, Cookielen } = useFilterContext();
 
-    const [pageCount, setPageCount] = useState(2);
-    function count() {
-        // const { name } = LabDatas;
-        // console.log(name);
-        const filteredData = LabDatas?.filter((filtervalue) => {
-            if (JSON.parse(Cookies.get("tests")).some(object => object.id === filtervalue._id)) {
-                return filtervalue;
-            }
-        }).map(res => {
-            return Object.values(res.labs).map(val => val)
-        })
-        // setPageCount(Math.ceil(filteredData.length / 6));
-    }
+    const [pageCount, setPageCount] = useState(0);
+    const [objCount, setobjCount] = useState(0);
     useEffect(() => {
-        count();
-    })
+        setPageCount(Math.ceil(objCount / 6));
+    }, [objCount])
+
     const [keysi, newkeysi] = useState(0);
     const [keys, newkeys] = useState(6);
     const handlePageClick = (data) => {
@@ -42,7 +32,7 @@ export default function LabDetails() {
             if (JSON.parse(Cookies.get("tests")).length === 0) {
                 navigate("/")
             }
-
+            Cookielen(JSON.parse(Cookies.get("tests")).length)
         } else {
             Cookies.set("tests", JSON.stringify(myArray), {
                 expires: 1,
@@ -79,14 +69,7 @@ export default function LabDetails() {
             return (
                 <>
                     <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
-                        <Audio
-                            height="80"
-                            width="100%"
-                            radius="9"
-                            color="#02bdb4"
-                            ariaLabel="loading"
-
-                        />
+                        <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
             )
@@ -106,14 +89,12 @@ export default function LabDetails() {
                         <div className={srchsuggest ? "d-none srch_suggest" : "srch_suggest"}>
                             {filterData && (filterData.map(res => {
                                 return (
-                                    <div key={res.Sno}><span className="listtest" onClick={() => { setCookie(res._id, res.name); setsrchsuggest(true) }} style={{ fontSize: "14px" }} href="#">{res.name}</span>
-                                        {/* <a href="#"> {res.LAB_NAME}</a> */}
+                                    <div key={res._id}><span className="listtest" onClick={() => { setCookie(res._id, res.name); setsrchsuggest(true) }} style={{ fontSize: "14px" }}>{res.name}</span>
                                     </div>
                                 )
                             }))
                             }
                         </div>
-
                     </div>
 
                     <select style={{ padding: "8px 20px", fontSize: "15px" }} className="form-select drp-srchbar2" aria-label="Default select example">
@@ -135,13 +116,9 @@ export default function LabDetails() {
                                 })}
                             </div>
                         </h4>
-                        {LabDatas?.filter((filtervalue) => {
-                            if (JSON.parse(Cookies.get("tests")).some(object => object.id === filtervalue._id)) {
-                                return filtervalue;
-                            }
-                        }).map(res => {
-                            return Object.values(res.labs).slice(keysi, keys).map(val => {
-                                // console.log(val)
+                        {filterlabData.map(res => {
+                            return Object.values(res.labs).filter(resfil => { if (Object.values(res.labs).some(some => some.code === resfil.code)) { return resfil } }).map((val, index) => {
+                                // setobjCount(objCount + 1);
                                 return (
                                     <div key={val.code} className="con_about p-1 my-1 lab-box" style={{ maxHeight: "180px", boxShadow: "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px" }}>
                                         <div className="d-flex justify-content-between">

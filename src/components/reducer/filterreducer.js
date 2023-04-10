@@ -18,8 +18,7 @@ const filterReducer = (state, action) => {
             }
 
         case "FILTERTEST":
-            let { allData } = state;
-            let tempFiltertest = [...allData];
+            let tempFiltertest = [...state.allData];
             const { text } = state.filters;
             if (text) {
                 tempFiltertest = tempFiltertest.filter((value) => {
@@ -34,6 +33,22 @@ const filterReducer = (state, action) => {
                 ...state,
                 filterData: tempFiltertest,
             }
+        case "FILTERLABDATA":
+            let tempFilterlabs = [...state.allData];
+            if (JSON.parse(Cookies.get("tests")) !== undefined) {
+                tempFilterlabs = tempFilterlabs.filter((value) => {
+                    if (JSON.parse(Cookies.get("tests")).some(object => object.id === value._id)) {
+                        return value;
+                    }
+                })
+            } else if (JSON.parse(Cookies.get("tests")) === undefined) {
+                tempFilterlabs = []
+            }
+            return {
+                ...state,
+                filterlabData: tempFilterlabs
+            }
+
         default: return state
     }
 
