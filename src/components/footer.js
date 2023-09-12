@@ -14,7 +14,7 @@ export default function Footer() {
         await axios.post('/subemail', {
             email: subMail
         }, { headers: { "Content-Type": "application/json" } }).then(res => {
-            setsubMail("")
+            setsubMail("");
             notifyse();
         })
     }
@@ -117,7 +117,7 @@ export default function Footer() {
                                 </li>
                                 <li>
                                     <i className="icon-black-envelope"></i>
-                                    <a href="carealpha247@gmail.com">
+                                    <a href="mailto:carealpha247@gmail.com">
                                         carealpha247@gmail.com
                                     </a>
                                 </li>

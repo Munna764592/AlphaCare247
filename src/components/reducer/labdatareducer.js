@@ -5,6 +5,18 @@ const LabdataReducer = (state, action) => {
                 ...state,
                 isLoading: true
             }
+        case "USERLOGIN":
+            return {
+                ...state,
+                isLoading: false,
+                CheckLogin: action.payload
+            }
+        case "USERDATA":
+            return {
+                ...state,
+                isLoading: false,
+                UserData: action.payload
+            }
         case "SET_API_DATA":
             return {
                 ...state,
@@ -52,6 +64,12 @@ const LabdataReducer = (state, action) => {
                 ...state,
                 isLoading: false,
                 MostBookedRadiology: action.payload
+            }
+        case "OPENLOGIN":
+            return {
+                ...state,
+                isLoading: false,
+                OpenLogin: action.payload
             }
         case "API_ERROR":
             return {

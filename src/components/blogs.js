@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useLabContext } from "./context/globalcontext";
-import { Audio } from 'react-loader-spinner';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const Labs = () => {
@@ -25,7 +24,7 @@ const Labs = () => {
         {
             return (
                 <>
-                    <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
+                    <div style={{ position: "absolute", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-105px" }}>
                         <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
@@ -66,7 +65,7 @@ const Labs = () => {
                         </div>
                         <div>
                             <i style={{ color: "#23d4be" }} className="fa-solid fa-angle-right mr-1"></i>
-                            FEVER CAUSE WEAKNESSs
+                            FEVER CAUSE WEAKNESS
                         </div>
                     </div>
                     <h5 className="mt-2">CATEGORIES:</h5>

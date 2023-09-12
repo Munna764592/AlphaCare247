@@ -114,9 +114,10 @@ const Labs = () => {
                                             <button type="submit" style={{ borderRadius: "0 4px 4px 0", height: "44px", boxShadow: "none" }} className="btn-lab btn-lab3 btn-b" >Post</button>
                                         </div>
                                     </form>
-                                    <div className="texts1">
+                                    {/* <div className="texts1">
                                         <i className="fa-solid fa-door-open mr-1"></i>
-                                        You must be logged in to post a comment.</div>
+                                        You must be logged in to post a comment.
+                                    </div> */}
                                 </div>
                             </div>
                         </div>

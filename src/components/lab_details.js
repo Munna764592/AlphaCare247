@@ -1,21 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useLabContext } from "./context/globalcontext";
 import { useFilterContext } from "./context/filtercontext";
-import { useFilterlabContext } from "./context/filterlabcontext";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPaginate from 'react-paginate';
 import Cookies from 'js-cookie';
 
+const TestDetail = ({ res }) => {
+    const [hidedetail, sethidedetail] = useState(false);
+    const HideShow = (val) => {
+        if (val) {
+            sethidedetail(false);
+        } else if (!val) {
+            sethidedetail(true);
+        }
+    }
+    return (
+        <div>
+            <div className="ff1" style={{ fontWeight: "600", cursor: "pointer" }} onClick={() => { HideShow(hidedetail) }}><i className="fa-solid fa-circle fa-2xs"></i> {res.name}<i style={{ marginLeft: "5px" }} className={hidedetail ? "fa-solid fa-caret-down dropdown-rt" : "fa-solid fa-caret-down"}></i></div>
+            <div style={{ fontSize: "14px" }} className={hidedetail ? "mb-1 test-dh" : "mb-1 test-dh test-dl"}>{res.testdetail}</div>
+        </div>
+    )
+}
+
 export default function LabDetails() {
     const navigate = useNavigate();
     const { isLoading, LabDatas } = useLabContext();
-    const { handlesrchfilter, filters: { text }, filterData, filterlabData, Cookielen } = useFilterContext();
-
-    const [pageCount, setPageCount] = useState(0);
-    const [objCount, setobjCount] = useState(0);
-    useEffect(() => {
-        setPageCount(Math.ceil(objCount / 6));
-    }, [objCount])
+    const { handlesrchfilter, filters: { text }, filterData, filterlabData, Cookielen, datalabs, sorting, SameTests } = useFilterContext();
 
     const [keysi, newkeysi] = useState(0);
     const [keys, newkeys] = useState(6);
@@ -50,7 +60,7 @@ export default function LabDetails() {
         window.newArray = [...myArray, { 'id': id, 'test': name }];
         setMyArray(window.newArray);
         Cookies.set("tests", JSON.stringify(window.newArray), {
-            expires: 1,
+            expires: 10,
             secure: true,
             sameSite: 'strict',
             path: '/'
@@ -68,7 +78,7 @@ export default function LabDetails() {
         {
             return (
                 <>
-                    <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
+                    <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-105px" }}>
                         <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
@@ -96,11 +106,10 @@ export default function LabDetails() {
                             }
                         </div>
                     </div>
-
-                    <select style={{ padding: "8px 20px", fontSize: "15px" }} className="form-select drp-srchbar2" aria-label="Default select example">
+                    <select style={{ padding: "8px 20px", fontSize: "15px" }} className="form-select drp-srchbar2" onClick={sorting}>
                         <option style={{ fontSize: "15px" }} defaultValue>All</option>
-                        <option value="1">Pathology</option>
-                        <option value="2">Radiology</option>
+                        <option value="pathology">Pathology</option>
+                        <option value="radiology">Radiology</option>
                     </select>
                 </div>
             </div>
@@ -116,11 +125,11 @@ export default function LabDetails() {
                                 })}
                             </div>
                         </h4>
-                        {filterlabData.map(res => {
-                            return Object.values(res.labs).filter(resfil => { if (Object.values(res.labs).some(some => some.code === resfil.code)) { return resfil } }).map((val, index) => {
-                                // setobjCount(objCount + 1);
+                        {datalabs ? datalabs.slice(keysi, keys).map(val => {
+                            if (val !== undefined) {
+
                                 return (
-                                    <div key={val.code} className="con_about p-1 my-1 lab-box" style={{ maxHeight: "180px", boxShadow: "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px" }}>
+                                    <div key={val?.serial} className="con_about p-1 my-1 lab-box" style={{ maxHeight: "180px", boxShadow: "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px" }}>
                                         <div className="d-flex justify-content-between">
                                             <div className="d-flex">
                                                 <Link to={`/test/${val.name}`} style={{ fontSize: "20px", fontWeight: "700", color: "black" }}>{val.name}</Link>
@@ -133,12 +142,12 @@ export default function LabDetails() {
                                         <div className="d-flex">
                                             <div style={{ width: "80%", fontSize: "14px" }}>
                                                 <div><i style={{ color: "red" }} className="fa-solid fa-location-dot mr-1"></i>Delhi, Noida, Gurugram</div>
-                                                <div><i style={{ color: "#20c997" }} className="fa-regular fa-circle-check mr-1"></i>NABL</div>
+                                                <div><i style={{ color: "#20c997" }} className="fa-regular fa-circle-check mr-1"></i>{val?.certificate}</div>
                                                 <div><i className="fa-solid fa-clock-rotate-left mr-1"></i>Get Reports Within: <span style={{ color: "black" }}>{val.reportingtime}</span></div>
                                             </div>
                                             <div style={{ width: "20%", color: "black" }}>
-                                                <div className="strikethrough" style={{ fontWeight: "600" }}>Rs.{2 * val.mrp}/-</div>
-                                                <div style={{ fontWeight: "600", fontSize: "20px" }}>Rs.{val.mrp}/-</div>
+                                                <div className="strikethrough" style={{ fontWeight: "600" }}>Rs.{(JSON.parse(Cookies.get("tests")).length > 1) ? 2 * SameTests.filter(get => get.labCode.toLowerCase() === val.code.toLowerCase())[0]?.testMrp : 2 * val?.mrp}/-</div>
+                                                <div style={{ fontWeight: "600", fontSize: "20px" }}>Rs.{(JSON.parse(Cookies.get("tests")).length > 1) ? SameTests.filter(get => get.labCode.toLowerCase() === val.code.toLowerCase())[0]?.testMrp : val?.mrp}/-</div>
                                                 <div className="ml-1 pricetag" style={{ position: "relative" }}>
                                                     <i style={{ color: "#ffc107", transform: "rotate(-45deg)" }} className="fa-solid fa-5x fa-tag"></i><div style={{ position: "absolute", color: "white", fontWeight: "900", fontSize: "25px", left: "23px", top: "25px", lineHeight: "18px" }}>50<div style={{ fontSize: "13px" }}>%off</div></div>
                                                 </div>
@@ -146,16 +155,19 @@ export default function LabDetails() {
                                         </div>
                                     </div>
                                 )
-                            })
+                            }
                         })
+                            : <div className="alert alert-danger text-center">
+                                This combination of tests is not available in any lab!
+                            </div>
                         }
                     </div>
-                    <ReactPaginate breakLabel={'...'} pageCount={pageCount} onPageChange={handlePageClick} containerClassName={'pagination justify-content-center py-1'} pageClassName={'page-item'} pageLinkClassName={'page-link'} previousClassName={'page-item'} previousLinkClassName={'page-link'} nextClassName={'page-item'} nextLinkClassName={'page-link'} activeClassName={'active'} />
+                    <ReactPaginate breakLabel={'...'} pageCount={(datalabs != undefined) ? Math.ceil(datalabs?.length / 6) : 1} onPageChange={handlePageClick} containerClassName={'pagination justify-content-center py-1'} pageClassName={'page-item'} pageLinkClassName={'page-link'} previousClassName={'page-item'} previousLinkClassName={'page-link'} nextClassName={'page-item'} nextLinkClassName={'page-link'} activeClassName={'active'} />
 
                 </div>
                 <div className=" mx-4" style={{ width: "30%" }}>
                     <h5 style={{ color: "#02bdb4" }}>We make search easy for you</h5>
-                    <div style={{ color: "black" }} className="con_about p-1">
+                    {/* <div style={{ color: "black" }} className="con_about p-1">
                         <div style={{ color: "#ffc107" }} className="d-flex"><h6 style={{ color: "#02bdb4", fontWeight: "600", fontSize: "17px" }}>Price Filter</h6><i className="fa-solid fa-filter ml-1"></i>
                         </div>
                         <div><input className="sliderd" type="range" id="cowbell" name="cowbell" min="50" max="5000" />
@@ -182,23 +194,39 @@ export default function LabDetails() {
                             </div>
                         </div>
                     </div>
-                    <h5 className="mt-1" style={{ color: "#02bdb4" }}>Test prepration</h5>
+                    <h5 className="mt-1" style={{ color: "#02bdb4" }}>Test prepration</h5> */}
                     <div style={{ color: "black" }} className="con_about p-1">
-                        <div style={{ color: "#ffc107" }} className="d-flex"><h5 style={{ color: "#02bdb4", fontWeight: "600", fontSize: "17px" }}>Test details</h5><i className="fa-solid fa-circle-info ml-1"></i>
+
+                        <div style={{ color: "#ffc107" }} className="d-flex"><h6 style={{ color: "#02bdb4", fontWeight: "600", fontSize: "17px" }}>Price Filter</h6><i className="fa-solid fa-filter ml-1"></i>
                         </div>
-                        <div style={{ fontWeight: "700", fontSize: "15px" }}>
-                            Complete Blood Count
+                        <div>
+                            <input className="sliderd" type="range" id="cowbell" name="cowbell" min="50" max="5000" />
                         </div>
-                        <div style={{ fontSize: "14px" }} className="mb-1">It measures the hemoglobin and all other tests...</div>
+                        <div className="bor_filter mt-1">
+                            <div style={{ color: "#ffc107" }} className="d-flex mt-1"><h5 style={{ color: "#02bdb4", fontWeight: "600", fontSize: "17px" }}>Test details</h5><i className="fa-solid fa-circle-info ml-1"></i>
+                            </div>
+                            {filterlabData.map((res, index) => {
+                                return (
+                                    <TestDetail key={index} res={res} />
+                                )
+                            })}
+                        </div>
                         <div className="bor_filter">
                             <div style={{ color: "#ffc107" }} className="d-flex mt-1"><h5 style={{ color: "#02bdb4", fontWeight: "600", fontSize: "17px" }}>Things you must know</h5><i className="fa-solid fa-circle-exclamation ml-1"></i>
                             </div>
-                            <div style={{ fontWeight: "700" }}>
-                                <i style={{ color: "#ffc107" }} className="fa-solid fa-droplet mr-1"></i>Sample Type: <span style={{ fontWeight: "500", fontSize: "14px" }}>Blood/Urine</span>
-                            </div>
-                            <div style={{ fontWeight: "700", fontSize: "15px" }}>
-                                <i style={{ color: "#ffc107" }} className="fa-solid fa-circle-check mr-1"></i>Prepration: <span style={{ fontWeight: "500", fontSize: "14px" }}>Fasting must be for 8-10 hours.</span>
-                            </div>
+                            {filterlabData.map((res, index) => {
+                                return (
+                                    <div key={index}>
+                                        <div className="ff1" style={{ fontWeight: "600" }}><i className="fa-solid fa-circle fa-2xs"></i> {res.name} </div>
+                                        <div style={{ fontWeight: "700", marginLeft: "8px" }}>
+                                            <i style={{ color: "#ffc107" }} className="fa-solid fa-droplet mr-1"></i>Sample Type: <span style={{ fontWeight: "500", fontSize: "14px" }}>{res.sampletype}</span>
+                                        </div>
+                                        <div style={{ fontWeight: "700", fontSize: "15px", marginLeft: "8px" }}>
+                                            <i style={{ color: "#ffc107" }} className="fa-solid fa-circle-check mr-1"></i>Preparation: <span style={{ fontWeight: "500", fontSize: "14px" }}>{res.preparations}</span>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
                     <h5 className="mt-1" style={{ color: "#02bdb4" }}>Recomended Tests</h5>

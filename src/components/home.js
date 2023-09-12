@@ -1,14 +1,15 @@
 import Slider from "react-slick";
 import { Modal } from 'react-fade-modal';
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import PhoneInput from 'react-phone-number-input'
 import { toast } from 'react-toastify';
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLabContext } from "./context/globalcontext";
-import { Audio } from 'react-loader-spinner';
 import Cookies from 'js-cookie';
 import { useFilterContext } from "./context/filtercontext";
+// import Modal from 'react-modal';
+
 
 const Icons = ({ val, setFaqIsOpen2, setclickedFaq }) => {
     const [expandIcon, setexpandIcon] = useState(false);
@@ -55,8 +56,9 @@ const FaqCommon = ({ res }) => {
 }
 
 export default function Home() {
-    const { isLoading, LabDatas, PinCodes, MostBookedPathology, MostBookedRadiology, FaqRadiology, FaqPathology, FaqSample } = useLabContext();
-    const { handlesrchfilter, filters: { text }, filterData, Cookielen } = useFilterContext();
+    const navigate = useNavigate();
+    const { isLoading, LabDatas, PinCodes, MostBookedPathology, MostBookedRadiology, FaqRadiology, FaqPathology, FaqSample, OpenLoginFun } = useLabContext();
+    const { handlesrchfilter, filters: { text }, filterData, filterlabData, Cookielen, datalabs, sorting } = useFilterContext();
     const [srchsuggest, setsrchsuggest] = useState(true);
     const [FaqIsOpen2, setFaqIsOpen2] = useState(0);
     const [clickedFaq, setclickedFaq] = useState([]);
@@ -121,14 +123,13 @@ export default function Home() {
 
     // Upload prescription 
     const [LoginUsr, setLoginUsr] = useState(false);
-    const notify1 = () => toast.error("PLEASE LOGIN FIRST!!");
     const notify2 = () => toast("PRESCRIPTION UPLODED. WE WILL GET BACK TO YOU SHORTLY!!")
     const [Prescription, setPrescription] = useState("");
     const [uploadPres, setuploadPres] = useState(false);
     const [phoneNo, setphoneNo] = useState("");
     const Checklogin = () => {
         if (LoginUsr === false) {
-            notify1();
+            OpenLoginFun(true);
         }
     }
     const callProfilesection = async () => {
@@ -149,7 +150,7 @@ export default function Home() {
 
     const UploadPrescription = async () => {
         const formData = new FormData();
-        formData.append('phone', phoneNo)
+        formData.append('phone', phoneNo);
         formData.append('prescription', Prescription)
         if (LoginUsr === true) {
             await axios.post('/uploadprescription', formData).then(res => {
@@ -158,7 +159,7 @@ export default function Home() {
                 setuploadPres(false)
             })
         } else if (LoginUsr === false) {
-            notify1();
+            OpenLoginFun(true);
         }
     }
     // feedback form 
@@ -184,7 +185,7 @@ export default function Home() {
     // get a callback 
     const notify = () => toast("YOU WILL RECEIVE A CALL AFTER SOME TIME!");
     const [err, seterr] = useState(false);
-    const [phoneno, setphone] = useState("")
+    const [phoneno, setphone] = useState("");
 
     const submitForm = (e) => {
         e.preventDefault();
@@ -247,7 +248,7 @@ export default function Home() {
         } else {
             setbookbtn(true);
             Cookies.set("tests", JSON.stringify(myArray), {
-                expires: 1,
+                expires: 10,
                 secure: true,
                 sameSite: 'strict',
                 path: '/'
@@ -279,6 +280,15 @@ export default function Home() {
         const updatedData = cookieData.filter(item => item.id !== id);
         Cookies.set('tests', JSON.stringify(updatedData));
         getCookie();
+    }
+    const [availabletest, setavailabletest] = useState(false)
+    const SelectTest = () => {
+        if (datalabs === undefined) {
+            setavailabletest(true);
+        } else {
+            setavailabletest(false);
+            navigate("/select-tests")
+        }
     }
     // models 
     var settings = {
@@ -325,7 +335,21 @@ export default function Home() {
         speed: 2000,
         slidesToShow: 5,
         slidesToScroll: 1,
-        autoplaySpeed: 1500
+        autoplaySpeed: 1500,
+        responsive: [{
+            breakpoint: 856,
+            settings: {
+                slidesToShow: 4,
+                infinite: true
+            }
+        }, {
+            breakpoint: 600,
+            settings: {
+                slidesToShow: 3,
+                infinite: true
+            }
+        }
+        ]
     };
     function SampleNextArrow(props) {
         const { className, style, onClick } = props;
@@ -361,22 +385,35 @@ export default function Home() {
         speed: 1000,
         slidesToShow: 4,
         slidesToScroll: 1,
-        autoplaySpeed: 1500
+        autoplaySpeed: 1500,
+        responsive: [{
+            breakpoint: 856,
+            settings: {
+                slidesToShow: 2,
+                infinite: true
+            }
+        },
+        {
+            breakpoint: 550,
+            settings: {
+                slidesToShow: 1,
+                infinite: true
+            }
+        },
+        {
+            breakpoint: 1100,
+            settings: {
+                slidesToShow: 3,
+                infinite: true
+            }
+        }
+        ]
     };
     if (isLoading) {
         {
             return (
                 <>
-                    <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "100vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-128px" }}>
-                        {/* <div className="loader"></div> */}
-                        {/* <Audio
-                            height="80"
-                            width="100%"
-                            radius="9"
-                            color="#02bdb4"
-                            ariaLabel="loading"
-
-                        /> */}
+                    <div style={{ position: "fixed", background: "rgba(0,0,0,0.7)", width: "100%", height: "110vh", zIndex: "99999", display: "flex", justifyContent: "center", alignItems: "center", marginTop: "-105px" }}>
                         <div className="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
                 </>
@@ -386,21 +423,24 @@ export default function Home() {
     return (
         <>
             <div className={marginFix ? 'main-home fixed' : 'main-home'}>
-
                 <h1 className="m-homeh1">A Network Of Your Trusted Lab</h1>
-                <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-                    <div style={{ position: "relative", width: "10%" }}>
+                <div className="srch-main" >
+                    <div className="srch-loca">
                         <div className={Xmark ? "tooltipcss tooltipop" : "tooltipcss"}>Presently this pincode is not serviceable</div>
-                        <i style={{ color: "#02bdb4", fontSize: "25px", position: "absolute", left: "8px", top: "15px" }} className="fa-solid fa-1x fa-location-dot"></i>
+                        <span className="icon-location">
+                            <i className="fa-solid fa-1x fa-location-dot"></i>
+                        </span>
                         <input style={{ width: "100%" }} className="form-control drp-srchbar " type="number" defaultValue={pincode} onChange={(e) => { CheckDigit(e.target.value) }}></input>
                         <i style={{ position: "absolute", zIndex: "+4", right: "7px", top: "17px", fontSize: "20px", color: "#4BB543" }} className={Tick ? 'fa-solid fa-check' : 'fa-solid fa-check d-none'}></i>
                         <i style={{ position: "absolute", zIndex: "+4", right: "7px", top: "17px", fontSize: "20px", color: "red" }} className={Xmark ? 'fa-solid fa-xmark' : 'fa-solid fa-xmark d-none'}></i>
                     </div>
-                    <div style={{ width: "30%", position: "relative" }}>
+                    <div className="srch-test" >
                         <form onSubmit={(e) => e.preventDefault()}>
                             <input className="form-control srch-bar" type="text" name="text" value={text} onChange={(e) => { handlesrchfilter(e); setsrchsuggest(false) }} autoComplete="off" />
                         </form>
-                        <i style={{ color: "#02bdb4", fontSize: "25px", position: "absolute", left: "9px", zIndex: "+2", top: "15px" }} className="fa-solid fa-magnifying-glass"></i>
+                        <span className="icon-srchtest">
+                            <i className="fa-solid fa-magnifying-glass"></i>
+                        </span>
                         <div className={srchsuggest ? "d-none srch_suggest" : "srch_suggest"}>
                             {filterData && (filterData.map(res => {
                                 return (
@@ -411,17 +451,17 @@ export default function Home() {
                             }
                         </div>
                     </div>
-                    <select className="form-select drp-srchbar2" >
-                        <option style={{ fontSize: "15px" }} defaultValue>All</option>
-                        <option value="1">Pathology</option>
-                        <option value="2">Radiology</option>
+                    <select className="form-select drp-srchbar2" onClick={sorting} >
+                        <option className="srch-drpdown" defaultValue>All</option>
+                        <option className="srch-drpdown" value="pathology">Pathology</option>
+                        <option className="srch-drpdown" value="radiology">Radiology</option>
                     </select>
                     <div className="prescription" onClick={() => { LoginUsr ? setuploadPres(true) : Checklogin() }}>
-                        or<img className="ml-1" src={require("../images/prescription.png")} alt="img" /><span>Upload<br />Prescription<i className="fa-solid fa-caret-right"></i></span>
+                        <span className="or-srch">or</span><img className="ml-1 img-up" src={require("../images/prescription.png")} alt="img" /><span className="up-word">Upload<br />Prescription<i className="fa-solid fa-caret-right"></i></span>
                     </div>
                 </div>
                 <div style={{ display: "flex" }}>
-                    <img className="img-home" src={require("../images/scooter1.png")} alt="img" />
+                    <img className="img-home" src={require("../images/scooter12.png")} alt="img" />
                     <div style={{ width: "50%" }} className="text-center">
                         <div className="mb-1">
                             {(Cookies.get("tests") !== undefined) ? JSON.parse(Cookies.get("tests"))?.map(res => {
@@ -430,11 +470,14 @@ export default function Home() {
                                 )
                             }) : setbookfun()}
                         </div>
-                        <Link to='/select-tests' className={bookbtn ? 'd-none' : ''}><button style={{ borderRadius: "50px", padding: "13px 30px", fontSize: "25px" }} className="btn-lab btn-book">Book</button></Link>
+                        <div style={{ padding: "7px", width: "70%", margin: "auto" }} className={availabletest ? "alert alert-danger text-center" : "d-none alert alert-danger text-center"}>
+                            This combination of tests is not available in any lab!
+                        </div>
+                        <button onClick={() => SelectTest()} style={{ borderRadius: "50px", padding: "13px 30px", fontSize: "25px" }} className={bookbtn ? 'd-none btn-lab btn-book mt-1' : 'btn-lab mt-1 btn-book'}>Book</button>
                     </div>
                 </div>
-                <div style={{ display: "flex", position: "relative", marginTop: "-100px", background: "white" }}>
-                    <div className="slider-head">15+ LABS TO <br />CHOOSE FROM...<i className="ml-3 fa-solid fa-2x fa-play"></i></div>
+                <div className="labname-slider">
+                    <div className="slider-head">15+ LABS TO <br />CHOOSE FROM...<i className="arr-slider ml-3 fa-solid fa-play"></i></div>
                     <Slider className="logo-slider" {...settings6}>
                         <img className="img-slider" src={require("../images/HCPL.png")} alt="img" />
                         <img className="img-slider" src={require("../images/HEALTHFIRST.png")} alt="img" />
@@ -554,8 +597,7 @@ export default function Home() {
                     <div id="mainSliderWrapper">
                         <div
                             className="arrows-white arrows-bottom"
-                            id="mainSlider"
-                        >
+                            id="mainSlider">
                             <Slider className="mt-1" {...settings3}>
                                 <img src={require("../images/Carousel/1.png")} alt="img" />
                                 <img src={require("../images/Carousel/2.png")} alt="img" />
@@ -571,27 +613,27 @@ export default function Home() {
                 {/* <!--//section slider-->
                 <!--section departments--> */}
                 <div className="section text-center bg-bottom bg-right bg-norepeat bg-md-none bg-fixed image1">
-                    <h2 className="font-weight-bold pt-5">How it Works</h2>
-                    <h1>Get Safe Testing with <span style={{ color: "#02bdb4" }}>AlphaCare247</span></h1>
-                    <div className="d-flex justify-content-center mt-4">
-                        <div style={{ width: "15%" }}>
+                    <h2 className="font-weight-bold hiw">How it Works</h2>
+                    <h1 className="Gstw">Get Safe Testing with <span style={{ color: "#02bdb4" }}>AlphaCare247</span></h1>
+                    <div className="hiw-slider d-flex mt-4">
+                        <div className="hiw-width">
                             <img className="hiw-img" src={require("../images/How it works/11.png")} alt="img" />
-                            <div style={{ color: "black", fontWeight: "500" }}><div style={{ fontSize: "23px", fontWeight: "700", color: "#ffc107" }}>Book Your Test</div>Call us or visit our website to book your your lab test with our simple booking process.</div>
+                            <div style={{ color: "black", fontWeight: "500" }}><div className="hiw-text1" >Book Your Test</div><span className="hiw-text2">Call us or visit our website to book your your lab test with our simple booking process.</span></div>
                         </div>
                         <img className="hiw-imgbtn" src={require("../images/heart_rate.gif")} alt="img" />
-                        <div style={{ width: "15%" }}>
+                        <div className="hiw-width">
                             <img className="hiw-img" src={require("../images/How it works/21.png")} alt="img" />
-                            <div style={{ color: "black", fontWeight: "500" }}><div style={{ fontSize: "23px", fontWeight: "700", color: "#ffc107" }}>Safe Home Sample Collection</div>Our phlebotomists are well trained and certified to collect your sample from your home.</div>
+                            <div style={{ color: "black", fontWeight: "500" }}><div className="hiw-text1" >Safe Home Sample Collection</div><span className="hiw-text2">Our phlebotomists are well trained and certified to collect your sample from your home.</span></div>
                         </div>
                         <img className="hiw-imgbtn" src={require("../images/heart_rate.gif")} alt="img" />
-                        <div style={{ width: "15%" }}>
+                        <div className="hiw-width">
                             <img className="hiw-img" src={require("../images/How it works/31.png")} alt="img" />
-                            <div style={{ color: "black", fontWeight: "500" }}><div style={{ fontSize: "23px", fontWeight: "700", color: "#ffc107" }}>High Quality Lab Testing</div>We are committed to ensure that you always get the best possible results.</div>
+                            <div style={{ color: "black", fontWeight: "500" }}><div className="hiw-text1" >High Quality Lab Testing</div><span className="hiw-text2">We are committed to ensure that you always get the best possible results.</span></div>
                         </div>
                         <img className="hiw-imgbtn" src={require("../images/heart_rate.gif")} alt="img" />
-                        <div style={{ width: "15%" }}>
+                        <div className="hiw-width">
                             <img className="hiw-img" src={require("../images/How it works/41.png")} alt="img" />
-                            <div style={{ color: "black", fontWeight: "500" }}><div style={{ fontSize: "23px", fontWeight: "700", color: "#ffc107" }}>Get Online Reports</div>Once reports become available. we will send it to you via email and whatsapp.</div>
+                            <div style={{ color: "black", fontWeight: "500" }}><div className="hiw-text1" >Get Online Reports</div><span className="hiw-text2">Once reports become available. we will send it to you via email and whatsapp.</span></div>
                         </div>
                     </div>
                     <div className="department-tabs2-bg">
@@ -599,7 +641,7 @@ export default function Home() {
                     </div>
                     <div style={{ background: "rgb(199 199 199 / 19%)" }} id="tab-content" className="tab-content mt-2 mt-sm-4">
                         <div>
-                            <h2 className="font-weight-bold">We are in</h2>
+                            <h2 className="wri-heading font-weight-bold">We are in</h2>
                             <div className="d-flex justify-content-center mb-4">
                                 <button className={call1 ? 'btn-bt active-color' : ' btn-bt'}
                                     onClick={() => { sendval(1) }} >Pathology</button>
@@ -611,7 +653,7 @@ export default function Home() {
                                 <img src={require('../images/content/bg-map.png')} alt="" />
                             </div>
                             <div className="row pb-4">
-                                <h1 style={{ color: "#02bdb4" }}>Most Booked Blood Tests</h1>
+                                <h1 className="mbb-test" style={{ color: "#02bdb4" }}>Most Booked Blood Tests</h1>
                                 <Slider className="RP" {...settings7}>
                                     {MostBookedPathology?.map(val => {
                                         return (
@@ -626,7 +668,7 @@ export default function Home() {
                                 <img src={require('../images/content/bg-map.png')} alt="" />
                             </div>
                             <div className="row">
-                                <h1 style={{ color: "#02bdb4" }}>Most Booked Health Scans and Imaging Tests</h1>
+                                <h1 className="mbb-test" style={{ color: "#02bdb4" }}>Most Booked Health Scans and Imaging Tests</h1>
                                 <Slider className="RP mb-2" {...settings7}>
                                     {MostBookedRadiology?.map(val => {
                                         return (
@@ -675,7 +717,6 @@ export default function Home() {
                                         <img src={require('../images/nikhil/SO4.jpg')} alt="" />
                                     </div>
                                 </div>
-
                             </Slider>
                         </div>
                     </div>
@@ -771,19 +812,16 @@ export default function Home() {
                     <div className="title-wrap">
                         <div className="h-sub theme-color text-center pt-4">Testimonials</div>
                         <h2
-                            className="h1 double-title double-title--white text-center"
-                        >
+                            className="h1 double-title double-title--white text-center">
                             <span>
                                 What Our
                                 Customers Say
                             </span>
                         </h2>
-
-                        <img style={{ width: "13%", position: "absolute", left: "", zIndex: "+5" }} src={require("../images/reviews/1.png")} alt="img" />
-                        <img style={{ width: "10%", position: "absolute", top: "370px", left: "90px", zIndex: "+5" }} src={require("../images/reviews/2.png")} alt="img" />
-                        <img style={{ width: "7%", position: "absolute", top: "270px", left: "240px", zIndex: "+5" }} src={require("../images/reviews/3.png")} alt="img" />
-                        <div style={{ margin: "auto", width: "45%", overflow: "hidden", padding: "20px 8px", position: "relative" }}>
-
+                        <img className="t-img" style={{ width: "13%", position: "absolute", left: "", zIndex: "+5" }} src={require("../images/reviews/1.png")} alt="img" />
+                        <img className="t-img" style={{ width: "10%", position: "absolute", top: "370px", left: "90px", zIndex: "+5" }} src={require("../images/reviews/2.png")} alt="img" />
+                        <img className="t-img" style={{ width: "7%", position: "absolute", top: "270px", left: "240px", zIndex: "+5" }} src={require("../images/reviews/3.png")} alt="img" />
+                        <div className="g-slide" >
                             <Slider className="g-review" {...settings}>
                                 <div className="review">
                                     <img src={require("../images/search.png")} alt="img" />
@@ -792,8 +830,10 @@ export default function Home() {
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span> Providing the best service at the cheapest cost possible. Great experience!<span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
-                                        <div className="text2"> - Rachana Joshi<br />(East Delhi)</div></div>
+                                    <div className="text-gdrive">
+                                        <span><img src={require("../images/left-quote.png")} alt="img" /></span> Providing the best service at the cheapest cost possible. Great experience!<span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
+                                        <div className="text2"> - Rachana Joshi<br />(East Delhi)</div>
+                                    </div>
                                 </div>
                                 <div className="review">
                                     <img src={require("../images/search.png")} alt="img" />
@@ -802,9 +842,9 @@ export default function Home() {
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span> PTimely collection of blood sample and reports were delivered on time too. Keep up the good work.<span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
-                                        <div className="text2"> - Richa Verma <br />(East Delhi)</div></div>
-
+                                    <div className="text-gdrive"><span><img src={require("../images/left-quote.png")} alt="img" /></span> PTimely collection of blood sample and reports were delivered on time too. Keep up the good work.<span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
+                                        <div className="text2"> - Richa Verma <br />(East Delhi)</div>
+                                    </div>
                                 </div>
                                 <div className="review">
                                     <img src={require("../images/search.png")} alt="img" />
@@ -813,7 +853,7 @@ export default function Home() {
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span>  I had booked the slot for RT-PCR test, the service was quite fast and affordable too.
+                                    <div className="text-gdrive"><span><img src={require("../images/left-quote.png")} alt="img" /></span>  I had booked the slot for RT-PCR test, the service was quite fast and affordable too.
                                         <span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
                                         <div className="text2"> - Deep Aggarwal<br /> ( East Delhi)</div></div>
 
@@ -825,7 +865,7 @@ export default function Home() {
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span>They offer the best price and provide service that is always on time. good behaviour of Phlebotomist Rohit, who came for sample collection.
+                                    <div className="text-gdrive"><span><img src={require("../images/left-quote.png")} alt="img" /></span>They offer the best price and provide service that is always on time. good behaviour of Phlebotomist Rohit, who came for sample collection.
                                         <span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
                                         <div className="text2"> - Yatin Singhania</div></div>
 
@@ -837,31 +877,30 @@ export default function Home() {
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span>Very friendly and helpful staff. It's very simple for me to select a nearby lab for my x-ray test.
+                                    <div className="text-gdrive"><span><img src={require("../images/left-quote.png")} alt="img" /></span>Very friendly and helpful staff. It's very simple for me to select a nearby lab for my x-ray test.
                                         <span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
                                         <div className="text2"> - Rishabh Arora <br />(Dilshad Garden)
                                         </div></div>
-
                                 </div>
                                 <div className="review">
                                     <img src={require("../images/search.png")} alt="img" />
-                                    <div className="d-flex justify-content-center"><img src={require("../images/star.png")} alt="img" />
+                                    <div className="d-flex justify-content-center">
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
                                         <img src={require("../images/star.png")} alt="img" />
-                                        <img src={require("../images/star.png")} alt="img" /></div>
-                                    <div className="text"><span><img src={require("../images/left-quote.png")} alt="img" /></span>They deliver reports and services on time.I'm glad to use the service!
+                                        <img src={require("../images/star.png")} alt="img" />
+                                        <img src={require("../images/star.png")} alt="img" />
+                                    </div>
+                                    <div className="text-gdrive"><span><img src={require("../images/left-quote.png")} alt="img" /></span>They deliver reports and services on time.I'm glad to use the service!
                                         <span className="d-flex justify-content-end"><img src={require("../images/right-quote.png")} alt="img" /></span>
                                         <div className="text2"> - Jatin Singh <br />(Ghaziabad)</div></div>
-
                                 </div>
                             </Slider>
                         </div>
-                        <img style={{ width: "13%", position: "absolute", right: "0", top: "130px", zIndex: "+5" }} src={require("../images/reviews/5.png")} alt="img" />
-                        <img style={{ width: "7%", position: "absolute", top: "270px", right: "240px", zIndex: "+5" }} src={require("../images/reviews/4.png")} alt="img" />
-                        <img style={{ width: "10%", position: "absolute", top: "370px", right: "90px", zIndex: "+5" }} src={require("../images/reviews/6.png")} alt="img" />
+                        <img className="t-img" style={{ width: "13%", position: "absolute", right: "0", top: "130px", zIndex: "+5" }} src={require("../images/reviews/5.png")} alt="img" />
+                        <img className="t-img" style={{ width: "7%", position: "absolute", top: "270px", right: "240px", zIndex: "+5" }} src={require("../images/reviews/4.png")} alt="img" />
+                        <img className="t-img" style={{ width: "10%", position: "absolute", top: "370px", right: "90px", zIndex: "+5" }} src={require("../images/reviews/6.png")} alt="img" />
                     </div>
-
                 </div >
                 {/* <!--//section testimonials-->
 
@@ -1080,7 +1119,7 @@ export default function Home() {
                                 <div className="modal-body">
                                     <h3>Upload Prescription</h3>
                                     <div className='uploadDes p-2'>
-                                        <label htmlFor="Pres" style={{ fontSize: "18px", textShadow: "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px", cursor: "pointer" }} className="btn-lab btn-lab2 py-1">Upload<i className="fa-solid fa-circle-plus ml-1"></i></label>
+                                        <label htmlFor="Pres" style={{ fontSize: "18px", textShadow: "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px", cursor: "pointer", textAlign: "center" }} className="btn-lab btn-lab2 py-1">Upload<i className="fa-solid fa-circle-plus ml-1"></i></label>
                                         <input className="d-none" id="Pres" type="file" onChange={(e) => { setPrescription(e.target.files[0]) }} />
 
                                         <div className={(Prescription != "") ? "alert alert-success mt-1 p-1" : "alert alert-success mt-1 p-1 d-none"}>
@@ -1099,9 +1138,9 @@ export default function Home() {
             <div className="callback">
                 {/* <h2 style={{ fontSize: "25px", color: "white" }}>Get a call back</h2> */}
                 <form method='POST' className="callbackForm mt-1 mb-1" onSubmit={submitForm}>
-                    <PhoneInput className='form-control ff1' placeholder="Please enter your mobile no." defaultCountry="IN"
-                        value={phoneno} onChange={setphone} required autoComplete='off' style={{ width: "41%", borderRadius: "4px 0 0 4px", border: "2px solid #ffc107", boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px", fontSize: "17px", fontWeight: "600", padding: "7px" }} />
-                    <button style={{ borderRadius: "0 4px 4px 0", height: "44px" }} className="btn-lab btn-lab2 btn-b" type='submit' name='getotp' onClick={PostData} >Get a free call</button>
+                    <PhoneInput className='call-backno form-control ff1' placeholder="Please enter your mobile no." defaultCountry="IN"
+                        value={phoneno} onChange={setphone} required autoComplete='off' />
+                    <button className="btn-lab btn-lab2 btn-b" type='submit' name='getotp' onClick={PostData} >Get a free call</button>
                 </form>
                 <div style={{ width: "30%", padding: "10px" }} className={err ? "alert alert-danger" : "alert alert-danger d-none"}>
                     Please enter valid 10 digit Mobile number!

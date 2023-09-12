@@ -11,6 +11,11 @@ const initialState = {
         text: "",
     },
     filterlabData: [],
+    datalabs: [],
+    sortValue: 'All',
+    SameTests: [],
+    MaxPrice: "",
+    MinPrice: ""
 }
 
 export const FilterContextProvider = ({ children }) => {
@@ -18,16 +23,18 @@ export const FilterContextProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [num, setnum] = useState(0);
     useEffect(() => {
-        // console.log(LabDatas)
         JSON.parse(Cookies.get("tests")).filter(res => setnum(num + 1))
         dispatch({ type: 'LOADFILTERDATA', payload: LabDatas })
     }, [LabDatas])
 
+    // filter tests 
     useEffect(() => {
         dispatch({ type: "FILTERTEST" })
-    }, [state.filters])
+    }, [state.filters, state.sortValue])
+    // filter lab data 
     useEffect(() => {
         dispatch({ type: "FILTERLABDATA" })
+        dispatch({ type: "PRICEFILTER" })
     }, [LabDatas, num])
 
     // srch filter values  
@@ -36,11 +43,20 @@ export const FilterContextProvider = ({ children }) => {
         let value = event.target.value;
         return dispatch({ type: "SRCHFILTER", payload: { name, value } })
     }
+
+    // get cookie length 
     const Cookielen = (length) => {
         setnum(length);
     }
 
-    return (<FilterContext.Provider value={{ ...state, handlesrchfilter, Cookielen }}>
+    // sorting function 
+    const sorting = (event) => {
+        let selectedType = event.target.value;
+        dispatch({ type: "SELECTEDTYPE", payload: selectedType })
+    }
+
+    // price filter  
+    return (<FilterContext.Provider value={{ ...state, handlesrchfilter, Cookielen, sorting }}>
         {children}
     </FilterContext.Provider>
     )

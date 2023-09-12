@@ -9,14 +9,24 @@ const AppProvider = ({ children }) => {
         isError: false,
         LabDatas: [],
         BlogData: [],
-        PinCodes: []
-
+        PinCodes: [],
+        CheckLogin: false,
+        UserData: [],
+        OpenLogin: false
     }
     const [state, dispatch] = useReducer(reducer, initialState);
-
     const loadLabs = async () => {
         dispatch({ type: "SET_LOADING" })
         try {
+            axios.get('/loginUser', {
+                headers: {
+                    Accept: "application/json",
+                    "Content-type": "application/json"
+                },
+                credentials: "include"
+            }).then(res => {
+                dispatch({ type: "USERLOGIN", payload: true });
+            })
             await axios.get('/labdata', {
                 headers: {
                     "Content-type": "application/json"
@@ -74,6 +84,15 @@ const AppProvider = ({ children }) => {
             }).then(res => {
                 dispatch({ type: "MOST_BOOKED_RADIOLOGY", payload: res.data })
             });
+            axios.get('/loginUser', {
+                headers: {
+                    Accept: "application/json",
+                    "Content-type": "application/json"
+                },
+                credentials: "include"
+            }).then(res => {
+                dispatch({ type: "USERDATA", payload: res.data });
+            })
         } catch (err) {
             dispatch({ type: "API_ERROR" });
         }
@@ -82,7 +101,25 @@ const AppProvider = ({ children }) => {
         loadLabs();
     }, [])
 
-    return (<AppContext.Provider value={{ ...state }}>{children}</AppContext.Provider>)
+    function UserLogout(data) {
+        dispatch({ type: "USERLOGIN", payload: data })
+    }
+    function callAddPatient() {
+        axios.get('/loginUser', {
+            headers: {
+                Accept: "application/json",
+                "Content-type": "application/json"
+            },
+            credentials: "include"
+        }).then(res => {
+            dispatch({ type: "USERDATA", payload: res.data });
+        })
+    }
+    function OpenLoginFun(data) {
+        dispatch({ type: "OPENLOGIN", payload: data })
+    }
+
+    return (<AppContext.Provider value={{ ...state, UserLogout, callAddPatient, OpenLoginFun }}>{children}</AppContext.Provider>)
 }
 
 // custom hooks  

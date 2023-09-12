@@ -14,7 +14,6 @@ export default function About() {
     window.addEventListener("scroll", setMarginfun);
     return (
         <>
-
             <div className="page-content">
                 <div className={marginFix ? 'section page-content-first margin_about' : 'section page-content-first mt-8'}>
                     <div className="container">
@@ -23,7 +22,7 @@ export default function About() {
                             <div className="h-decor"></div>
                         </div>
                     </div>
-                    <img src={require("../images/nikhil/about us.png")} />
+                    <img className="img-about" src={require("../images/nikhil/about us.png")} />
                 </div>
                 <div style={{ color: "black" }} className='container-xxl'>
                     <div className='mt-3 p-2 text-center con_about'>
