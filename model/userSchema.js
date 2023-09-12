@@ -26,6 +26,50 @@ const userSchema = new mongoose.Schema({
                 required: true
             }
         }
+    ],
+    patients: [
+        {
+            patientname: {
+                type: String,
+            },
+            patientMno: {
+                type: String
+            },
+            patientage: {
+                type: String,
+            },
+            patientrelation: {
+                type: String
+            },
+            gender: {
+                type: String
+            }
+        }
+    ],
+    patientsaddress: [
+        {
+            fbsaddress: {
+                type: String,
+            },
+            city: {
+                type: String
+            },
+            pincode: {
+                type: String
+            },
+            locality: {
+                type: String
+            },
+            state: {
+                type: String
+            },
+            addresstype: {
+                type: String
+            },
+            landmark: {
+                type: String
+            }
+        }
     ]
 
 })

@@ -47,7 +47,6 @@ router.post('/uploadprescription', upload.single('prescription'), async (req, re
         console.log("user not exist")
     }
 
-
 })
 // Feedback form 
 router.post('/feedback', async (req, res) => {
@@ -366,6 +365,12 @@ router.get("/faqsamplequestion", async (req, res) => {
 })
 // update profile  
 router.route('/updateProfile').post(Authenticate, updateProfile);
+
+// add new patient  
+router.route('/addPatient').post(Authenticate, updateProfile);
+
+// add new address  
+router.route('/addAddress').post(Authenticate, updateProfile);
 
 // authentication data 
 router.get("/loginUser", Authenticate, (req, res) => {
