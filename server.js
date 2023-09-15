@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(require('./router/auth'));
 app.use(bodyParser.urlencoded({ extended: true }));
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4000;
 
 
 app.get('/', (req, res) => {
